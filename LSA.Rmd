@@ -1,0 +1,93 @@
+---
+title: "LSA"
+output: html_notebook
+---
+
+
+
+```{r}
+library (tm)
+mportdf = read.csv('dfnlp.csv', header = F, stringsAsFactors = F)
+```
+
+```{r}
+import_corpus = Corpus(VectorSource(importdf))
+```
+```{r}
+##r chunk
+#Lower case all words
+set.seed(123)
+import_corpus = tm_map(import_corpus, tolower) 
+
+#Remove punctuation for creating spaces
+import_corpus = tm_map(import_corpus, removePunctuation) 
+
+#Remove stop words
+import_corpus = tm_map(import_corpus, 
+                     function(x) removeWords(x, stopwords("english")))
+```
+```{r}
+import_matrix=as.matrix(TermDocumentMatrix(import_corpus))
+```
+
+```{r}
+library(lsa)
+
+#Weight the semantic space
+book_weight = lw_logtf(import_matrix) * gw_idf(import_matrix)
+```
+```{r}
+book_lsa = lsa(book_weight)
+
+#Convert to textmatrix for coherence
+book_lsa = as.textmatrix(book_lsa)
+```
+
+
+```{r}
+library(LSAfun, quietly = T)
+```
+
+```{r}
+plot_neighbors("bat", #single word
+               n =3, #number of neighbors
+               tvectors = book_lsa, #matrix space
+               method = "PCA", #PCA or MDS
+               dims = 2) #number of dimensions
+```
+
+```{r}
+plot_neighbors("rat", #single word
+               n =2, #number of neighbors
+               tvectors = book_lsa, #matrix space
+               method = "PCA", #PCA or MDS
+               dims = 2, #number of dimensions
+               connect.lines="all",col="rainbow")
+```
+
+```{r}
+plot_neighbors("feces", #single word
+               n =4, #number of neighbors
+               tvectors = book_lsa, #matrix space
+               method = "PCA", #PCA or MDS
+               dims = 2, #number of dimensions
+               connect.lines="all",col="rainbow")
+```
+
+```{r}
+plot_neighbors("eat", #single word
+               n=2, #number of neighbors
+               tvectors = book_lsa, #matrix space
+               method = "PCA", #PCA or MDS
+               dims = 2, #number of dimensions
+               connect.lines="all",col="rainbow")
+```
+```{r}
+plot_neighbors("bitten", #single word
+               n=2, #number of neighbors
+               tvectors = book_lsa, #matrix space
+               method = "PCA", #PCA or MDS
+               dims = 2, #number of dimensions
+               connect.lines="all",col="rainbow")
+```
+

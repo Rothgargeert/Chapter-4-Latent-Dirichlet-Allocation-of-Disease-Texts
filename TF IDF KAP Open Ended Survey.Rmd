@@ -1,0 +1,64 @@
+---
+title: "TF-IDF"
+output: html_notebook
+---
+
+
+
+```{r}
+library(tm)
+library(ggplot2)
+```
+```{r}
+set.seed(123)
+importdf = read.csv('dfnlp.csv', header = F, stringsAsFactors = F)
+```
+```{r}
+import_corpus = Corpus(VectorSource(importdf))
+```
+
+
+```{r}
+tdm = TermDocumentMatrix(import_corpus,
+                         control = list(weighting = weightTfIdf,
+                          stemming = TRUE, #create root words
+                          stopwords = TRUE, #remove stop words
+                          minWordLength = 3, #cut out small words
+                          removeNumbers = TRUE, #take out the numbers
+                          removePunctuation = TRUE)) #take out punctuation
+```
+
+```{r}
+tdm #summary of tdm
+```
+
+```{r}
+freq=rowSums(as.matrix(tdm)) #how frequently terms appear by summing content 
+head(freq,10)
+```
+```{r}
+tail(freq,10)
+```
+```{r}
+plot(sort(freq, decreasing = T),col="blue",main="Word TF-IDF frequencies", xlab="TF-IDF-based rank", ylab = "TF-IDF")
+```
+
+```{r}
+tail(sort(freq),n=10)
+```
+
+```{r}
+high.freq=tail(sort(freq),n=10)
+hfp.df=as.data.frame(sort(high.freq))
+hfp.df$names <- rownames(hfp.df) 
+
+ggplot(hfp.df, aes(reorder(names,high.freq), high.freq)) +
+  geom_bar(stat="identity") + coord_flip() + 
+  xlab("Terms") + ylab("Frequency") +
+  ggtitle("Term frequencies")
+```
+
+
+
+
+
