@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+library(tm)
+library(ggplot2)
+```
+```{r}
+trainingcorpus <- VCorpus(VectorSource(dfnlp))
+```
+
+```{r}
+preprocess <- function(document){
+    document <- tm_map(document, removePunctuation)
+    document <- tm_map(document, removeNumbers)
+    document <- tm_map(document, stripWhitespace)
+    document <- tm_map(document, content_transformer(tolower))
+    document <- tm_map(document, PlainTextDocument)
+    return(document)
+}
+trainingcorpus <- preprocess(trainingcorpus)
+```
+
+```{r}
+Bigramtokenizer <- function(x)
+        unlist(lapply(ngrams(words(x), 2), paste, collapse = " "), use.names = FALSE)
+Trigramtokenizer <-function(x)
+        unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
+```
+```{r}
+bigramdocumentmatrix <- TermDocumentMatrix(trainingcorpus,control = list(tokenize = Bigramtokenizer))
+trigramdocumentmatrix <- TermDocumentMatrix(trainingcorpus,control = list(tokenize = Trigramtokenizer))
+```
+```{r}
+bigramf <- findFreqTerms(bigramdocumentmatrix,lowfreq = 50)
+trigramf <- findFreqTerms(trigramdocumentmatrix,lowfreq = 50)
+```
+```{r}
+Bigramfreq <- rowSums(as.matrix(bigramdocumentmatrix[bigramf,]))
+Bigramfreq <- data.frame(word=names(Bigramfreq),frequency=Bigramfreq)
+Trigramfreq <- rowSums(as.matrix(trigramdocumentmatrix[trigramf,]))
+Trigramfreq <- data.frame(word=names(Trigramfreq),frequency=Trigramfreq)
+head(Trigramfreq)
+```
+
+```{r}
+plotthegraph <- function(data,title,num){
+        df <- data[order(-data$frequency),][1:num,]
+        barplot(df[1:num,]$freq, las = 2, names.arg = df[1:num,]$word,
+        col ="red", main = title,
+        ylab = "Word frequencies",cex.axis =0.8)
+}
+par(mar=c(10,4,4,2))
+
+plotthegraph(Bigramfreq,"Top Bigrams",20)
+```
+```{r}
+plotthegraph <- function(data,title,num){
+        df <- data[order(-data$frequency),][1:num,]
+        barplot(df[1:num,]$freq, las = 2, names.arg = df[1:num,]$word,
+        col ="blue", main = title,
+        ylab = "Word frequencies",cex.axis =0.8)
+}
+par(mar=c(10,4,4,2))
+
+plotthegraph(Trigramfreq,"Top Trigrams",20)
+```
+
