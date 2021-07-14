@@ -1,0 +1,51 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+set.seed(1234)
+library (tm)
+importdf = read.csv('dfnlp.csv', header = F, stringsAsFactors = F)
+```
+
+```{r}
+import_corpus = Corpus(VectorSource(importdf))
+```
+```{r}
+tdm = TermDocumentMatrix(import_corpus,
+                         control = list(weighting = weightTfIdf,
+                          stemming = TRUE, #create root words
+                          stopwords = TRUE, #remove stop words
+                          minWordLength = 3, #cut out small words
+                          removeNumbers = TRUE, #take out the numbers
+                          removePunctuation = TRUE)) #take out
+```
+
+
+
+
+```{r}
+# Create associations
+associations <- findAssocs(tdm, "fece", 0.6)
+
+# View the venti associations
+associations
+```
+```{r}
+# Create associations_df
+library(qdapTools)
+associations_df <- list_vect2df(associations)[, 2:3]
+head(associations_df)
+```
+
+```{r}
+library(ggthemes)
+library(ggplot2)
+# Plot the associations_df values (don't change this)
+ggplot(associations_df, aes(y = associations_df[,1])) + 
+  geom_point(aes(x = associations_df[, 2]), 
+             data = associations_df, size = 3) + 
+  ggtitle("Word Associations to 'Feces'") + 
+  theme(text = element_text(size = 10), element_line(size = 0.10))
+```
